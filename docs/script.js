@@ -145,12 +145,46 @@ function parse_data(table) {
                                 var ema = (nd / 3) + (prev * 2 / 3);
                                 state_data.y.push(ema);
                                 break;
+                        case "diff-percent":
+                                var rprev = 0;
+                                if (state_data.r_y.length > 1) {
+                                        rprev = state_data.r_y[state_data.y.length-1];
+                                }
+                                if (rprev == 0) {
+                                        nd = 100;
+                                } else {
+                                        nd = (nd / rprev - 1) * 100;
+                                }
+                                state_data.y.push(nd);
+                                break;
+                        case "3ema-diff-percent":
+                                var prev = 0;
+                                var rprev = 0;
+                                if (state_data.r_y.length > 1) {
+                                        rprev = state_data.r_y[state_data.y.length-1];
+                                        prev = state_data.y[state_data.y.length-1];
+                                }
+                                if (rprev == 0) {
+                                        nd = 100;
+                                } else {
+                                        nd = (nd / rprev - 1) * 100;
+                                }
+                                var ema = (nd / 3) + (prev * 2 / 3);
+                                state_data.y.push(ema);
+                                break;
                         }
 
                         lines[sdata[nameIdx]] = state_data;
                 }
         }
         lines = Object.values(lines)
+        if (config.math == "diff-percent") {
+                lines.forEach(element => {
+                        element.x.shift();
+                        element.y.shift();
+                        element.r_y.shift();
+                });
+        }
         lines = sort_lines(lines, config.sort_order)
         config.lines = lines;
 
