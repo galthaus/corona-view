@@ -1,0 +1,91 @@
+<head>
+	<!-- Load plotly.js into the DOM -->
+	<script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-csv/0.71/jquery.csv-0.71.min.js"></script>
+        <script src="script.js"></script>
+</head>
+
+<body>
+        <h1>State Data</h1>
+<form>
+<table>
+<tr>
+<td>Scale:</td>
+<td><select id="scaleSelect" onChange="rescale('usa', this);">
+<option>linear</option>
+<option>log</option>
+</select></td>
+</tr>
+<tr>
+<td>Function:</td>
+<td><select id="functionSelect" onChange="refunction('usa', this);">
+<option>count</option>
+<option>3ema-count</option>
+<option>diff</option>
+<option>3ema-diff</option>
+</select></td>
+</tr>
+<tr>
+<td>Data:</td>
+<td><select id="dataSelect" onChange="redata('usa', this);">
+<option>cases</option>
+<option>deaths</option>
+</select></td>
+</tr>
+<tr>
+<td>Sort Order:</td>
+<td><select id="sortSelect" onChange="resort('usa', this);">
+<option>alpha</option>
+<option>most</option>
+<option>least</option>
+</select></td>
+</tr>
+</table>
+
+</form>
+	<div id='usaDiv'></div>
+
+        <h1>County Data</h1>
+<form>
+<table>
+<tr>
+<td>Scale:</td>
+<td><select id="scaleSelect" onChange="rescale('county', this);">
+<option>Linear</option>
+<option>Logarithmic</option>
+</select></td>
+</tr>
+<tr>
+<td>Function:</td>
+<td><select id="functionSelect" onChange="refunction('county', this);">
+<option>count</option>
+<option>3ema-count</option>
+<option>diff</option>
+<option>3ema-diff</option>
+</select></td>
+</tr>
+<tr>
+<td>Data:</td>
+<td><select id="dataSelect" onChange="redata('county', this);">
+<option>cases</option>
+<option>deaths</option>
+</select></td>
+</tr>
+<tr>
+<td>Sort Order:</td>
+<td><select id="sortSelect" onChange="resort('county', this);">
+<option>alpha</option>
+<option>most</option>
+<option>least</option>
+</select></td>
+</tr>
+</table>
+
+</form>
+	<div id='countyDiv'></div>
+
+        <footer>
+                Data from The New York Times, based on reports from state and local health agencies. <a href="https://github.com/nytimes/covid-19-data">Here</a>
+        </footer>
+</body>
