@@ -1,5 +1,5 @@
 # corona-view
-Corona Virus NY Times stats viewer
+Corona Virus NY Times stats viewer - https://galthaus.github.io/corona-view/
 
 ## Contributers
 
