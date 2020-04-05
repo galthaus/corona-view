@@ -1,11 +1,11 @@
 
 // GREG: Add total line and toggle for on/off
 // GREG: Add toggle instead of date to days from min value.
-// GREG: Update title with pieces.
-// GREG: Fix county
 // GREG: Add state selector
+// GREG: Update title with pieces.
 
 
+var selectedTab='usa';
 var all_data = {
   usa: {
     include_total: true, // true, false
@@ -19,7 +19,6 @@ var all_data = {
     sort_order: "alpha",
     raw_data: {},
     scale: "linear",
-    div: "usaDiv",
     min: 100,
 },
   county: {
@@ -35,44 +34,75 @@ var all_data = {
     sort_order: "alpha",
     raw_data: {},
     scale: "linear",
-    div: "countyDiv",
     min: 20,
 },
 };
 
-function remin(g, elem) {
-        var config = all_data[g];
+function openData(evt, tab) {
+  // Declare all variables
+  var i, tablinks;
+
+  // Get all elements with class="tablinks" and remove the class "active"
+  tablinks = document.getElementsByClassName("tablinks");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+
+  // Show the current tab, and add an "active" class to the button that opened the tab
+  evt.currentTarget.className += " active";
+
+
+  var elem;
+  var config = all_data[tab];
+
+  elem = document.getElementById("minRange");
+  elem.value = config.min;
+  elem = document.getElementById(config.math);
+  elem.checked = true;
+  elem = document.getElementById(config.scale);
+  elem.checked = true;
+  elem = document.getElementById(config.show);
+  elem.checked = true;
+  elem = document.getElementById(config.sort_order);
+  elem.checked = true;
+
+  selectedTab = tab;
+  parse_data(tab);
+}
+
+function remin(elem) {
+        var config = all_data[selectedTab];
         config.min = elem.value;
 
-        var output = document.getElementById(g+"MinValue");
+        var output = document.getElementById("usaMinValue");
         output.innerHTML = elem.value;
 
-        parse_data(g);
+        parse_data(selectedTab);
 }
 
-function rescale(g, elem) {
-        var config = all_data[g];
+function rescale(elem) {
+        var config = all_data[selectedTab];
         config.scale = elem.value;
         config.layout.yaxis.type = elem.value;
-        Plotly.newPlot(config.div, config.lines, config.layout);
+        Plotly.newPlot('usaDiv', config.lines, config.layout);
 }
 
-function refunction(g, elem) {
-        var config = all_data[g];
+function refunction(elem) {
+        var config = all_data[selectedTab];
         config.math = elem.value;
-        parse_data(g);
+        parse_data(selectedTab);
 }
 
-function redata(g, elem) {
-        var config = all_data[g];
+function redata(elem) {
+        var config = all_data[selectedTab];
         config.show = elem.value;
-        parse_data(g);
+        parse_data(selectedTab);
 }
 
-function resort(g, elem) {
-        var config = all_data[g];
+function resort(elem) {
+        var config = all_data[selectedTab];
         config.sort_order = elem.value;
-        parse_data(g);
+        parse_data(selectedTab);
 }
 
 function sort_lines(lines, method) {
@@ -235,7 +265,7 @@ function parse_data(table) {
     type: config.scale
   }
 };
-        Plotly.newPlot(config.div, config.lines, config.layout);
+        Plotly.newPlot('usaDiv', config.lines, config.layout);
 }
 
 $.ajax({
@@ -245,10 +275,6 @@ $.ajax({
   success: function(response)
   {
 	all_data.usa.raw_data = $.csv.toArrays(response);
-        parse_data("usa");
-  }
-});
-
 $.ajax({
   type: "GET",
   url: "https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv",
@@ -256,7 +282,10 @@ $.ajax({
   success: function(response)
   {
 	all_data.county.raw_data = $.csv.toArrays(response);
-        parse_data("county");
+        parse_data("usa");
   }
 });
+  }
+});
+
 

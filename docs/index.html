@@ -8,7 +8,11 @@
 </head>
 
 <body>
-  <h1>State Data</h1>
+  <div class="tab">
+    <button id="defaultOpen" class="tablinks" onclick="openData(event, 'usa')">State Data</button>
+    <button class="tablinks" onclick="openData(event, 'county')">County Data</button>
+  </div>
+
   <div class="graph" id='usaDiv'></div>
   <div class="controls">
     <form>
@@ -16,56 +20,56 @@
         <div class="column">
           <label class="container">Min:</label>
           <div class="slidecontainer">
-            <input type="range" min="1" max="500" value="200" class="slider" id="minRange" onInput="remin('usa', this);">
+            <input type="range" min="1" max="500" value="200" class="slider" id="minRange" onInput="remin(this);">
           </div>
           <span id="usaMinValue"></span>
         </div>
         <div class="column">
           <label class="container">Scale:</label>
           <label class="container">Linear
-            <input type="radio" checked="checked" name="scaleSelect" value="linear" onChange="rescale('usa', this);">
+            <input id="linear" type="radio" checked="checked" name="scaleSelect" value="linear" onChange="rescale(this);">
             <span class="checkmark"></span>
           </label>
           <label class="container">Logarithmic
-            <input type="radio" name="scaleSelect" value="log" onChange="rescale('usa', this);">
+            <input id="log" type="radio" name="scaleSelect" value="log" onChange="rescale(this);">
             <span class="checkmark"></span>
           </label>
         </div>
         <div class="column">
           <label class="container">Function:</label>
           <label class="container">Cumulative
-            <input type="radio" checked="checked" name="functionSelect" value="count" onChange="refunction('usa', this);">
+            <input id="count" type="radio" checked="checked" name="functionSelect" value="count" onChange="refunction(this);">
             <span class="checkmark"></span>
           </label>
           <label class="container">Cumulative 3EMA
-            <input type="radio" name="functionSelect" value="3ema-count" onChange="refunction('usa', this);">
+            <input id="3ema-count" type="radio" name="functionSelect" value="3ema-count" onChange="refunction(this);">
             <span class="checkmark"></span>
           </label>
           <label class="container">New By Day
-            <input type="radio" name="functionSelect" value="diff" onChange="refunction('usa', this);">
+            <input id="diff" type="radio" name="functionSelect" value="diff" onChange="refunction(this);">
             <span class="checkmark"></span>
           </label>
           <label class="container">New By Day 3EMA
-            <input type="radio" name="functionSelect" value="3ema-diff" onChange="refunction('usa', this);">
+            <input id="3ema-diff" type="radio" name="functionSelect" value="3ema-diff" onChange="refunction(this);">
             <span class="checkmark"></span>
           </label>
           <label class="container">New By Day Percentage Change
-            <input type="radio" name="functionSelect" value="diff-percent" onChange="refunction('usa', this);">
+            <input id="diff-percent" type="radio" name="functionSelect" value="diff-percent" onChange="refunction(this);">
             <span class="checkmark"></span>
           </label>
           <label class="container">New By Day Percentage Change 3EMA
-            <input type="radio" name="functionSelect" value="3ema-diff-percent" onChange="refunction('usa', this);">
+            <input id="3ema-diff-percent" type="radio" name="functionSelect" value="3ema-diff-percent" onChange="refunction(this);">
             <span class="checkmark"></span>
           </label>
         </div>
         <div class="column">
           <label class="container">Data:</label>
           <label class="container">Cases
-            <input type="radio" checked="checked" name="dataSelect" value="cases" onChange="redata('usa', this);">
+            <input id="cases" type="radio" checked="checked" name="dataSelect" value="cases" onChange="redata(this);">
             <span class="checkmark"></span>
           </label>
           <label class="container">Deaths
-            <input type="radio" name="dataSelect" value="deaths" onChange="redata('usa', this);">
+            <input id="deaths" type="radio" name="dataSelect" value="deaths" onChange="redata(this);">
             <span class="checkmark"></span>
           </label>
         </div>
@@ -74,15 +78,15 @@
         <div class="column">
           <label class="container">Sort Order:</label>
           <label class="container">Alphabetical
-            <input type="radio" checked="checked" name="sortSelect" value="alpha" onChange="resort('usa', this);">
+            <input id="alpha" type="radio" checked="checked" name="sortSelect" value="alpha" onChange="resort(this);">
             <span class="checkmark"></span>
           </label>
           <label class="container">Most Data Value
-            <input type="radio" name="sortSelect" value="most" onChange="resort('usa', this);">
+            <input id="most" type="radio" name="sortSelect" value="most" onChange="resort(this);">
             <span class="checkmark"></span>
           </label>
           <label class="container">Least Data Value
-            <input type="radio" name="sortSelect" value="least" onChange="resort('usa', this);">
+            <input id="least" type="radio" name="sortSelect" value="least" onChange="resort(this);">
             <span class="checkmark"></span>
           </label>
         </div>
@@ -90,46 +94,10 @@
     </form>
   </div>
 
-  <h1>County Data</h1>
-  <div id='countyDiv'></div>
-<form>
-<table>
-<tr>
-<td>Scale:</td>
-<td><select id="scaleSelect" onChange="rescale('county', this);">
-<option>Linear</option>
-<option>Logarithmic</option>
-</select></td>
-</tr>
-<tr>
-<td>Function:</td>
-<td><select id="functionSelect" onChange="refunction('county', this);">
-<option>count</option>
-<option>3ema-count</option>
-<option>diff</option>
-<option>3ema-diff</option>
-<option>diff-percent</option>
-<option>3ema-diff-percent</option>
-</select></td>
-</tr>
-<tr>
-<td>Data:</td>
-<td><select id="dataSelect" onChange="redata('county', this);">
-<option>cases</option>
-<option>deaths</option>
-</select></td>
-</tr>
-<tr>
-<td>Sort Order:</td>
-<td><select id="sortSelect" onChange="resort('county', this);">
-<option>alpha</option>
-<option>most</option>
-<option>least</option>
-</select></td>
-</tr>
-</table>
-
-</form>
+  <script>
+    // Get the element with id="defaultOpen" and click on it
+    document.getElementById("defaultOpen").click();
+  </script>
 
   <footer>
     Page Source can be found <a href="https://github.com/galthaus/corona-view">here</a>.<br/>
