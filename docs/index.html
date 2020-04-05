@@ -1,54 +1,97 @@
 <head>
 	<!-- Load plotly.js into the DOM -->
-	<script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-csv/0.71/jquery.csv-0.71.min.js"></script>
-        <script src="script.js"></script>
+  <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-csv/0.71/jquery.csv-0.71.min.js"></script>
+  <script src="script.js"></script>
+  <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 
 <body>
-        <h1>State Data</h1>
-<form>
-<table>
-<tr>
-<td>Scale:</td>
-<td><select id="scaleSelect" onChange="rescale('usa', this);">
-<option>linear</option>
-<option>log</option>
-</select></td>
-</tr>
-<tr>
-<td>Function:</td>
-<td><select id="functionSelect" onChange="refunction('usa', this);">
-<option>count</option>
-<option>3ema-count</option>
-<option>diff</option>
-<option>3ema-diff</option>
-<option>diff-percent</option>
-<option>3ema-diff-percent</option>
-</select></td>
-</tr>
-<tr>
-<td>Data:</td>
-<td><select id="dataSelect" onChange="redata('usa', this);">
-<option>cases</option>
-<option>deaths</option>
-</select></td>
-</tr>
-<tr>
-<td>Sort Order:</td>
-<td><select id="sortSelect" onChange="resort('usa', this);">
-<option>alpha</option>
-<option>most</option>
-<option>least</option>
-</select></td>
-</tr>
-</table>
+  <h1>State Data</h1>
+  <div class="graph" id='usaDiv'></div>
+  <div class="controls">
+    <form>
+      <div class="row">
+        <div class="column">
+          <label class="container">Min:</label>
+          <div class="slidecontainer">
+            <input type="range" min="1" max="500" value="200" class="slider" id="minRange" onInput="remin('usa', this);">
+          </div>
+          <span id="usaMinValue"></span>
+        </div>
+        <div class="column">
+          <label class="container">Scale:</label>
+          <label class="container">Linear
+            <input type="radio" checked="checked" name="scaleSelect" value="linear" onChange="rescale('usa', this);">
+            <span class="checkmark"></span>
+          </label>
+          <label class="container">Logarithmic
+            <input type="radio" name="scaleSelect" value="log" onChange="rescale('usa', this);">
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="column">
+          <label class="container">Function:</label>
+          <label class="container">Cumulative
+            <input type="radio" checked="checked" name="functionSelect" value="count" onChange="refunction('usa', this);">
+            <span class="checkmark"></span>
+          </label>
+          <label class="container">Cumulative 3EMA
+            <input type="radio" name="functionSelect" value="3ema-count" onChange="refunction('usa', this);">
+            <span class="checkmark"></span>
+          </label>
+          <label class="container">New By Day
+            <input type="radio" name="functionSelect" value="diff" onChange="refunction('usa', this);">
+            <span class="checkmark"></span>
+          </label>
+          <label class="container">New By Day 3EMA
+            <input type="radio" name="functionSelect" value="3ema-diff" onChange="refunction('usa', this);">
+            <span class="checkmark"></span>
+          </label>
+          <label class="container">New By Day Percentage Change
+            <input type="radio" name="functionSelect" value="diff-percent" onChange="refunction('usa', this);">
+            <span class="checkmark"></span>
+          </label>
+          <label class="container">New By Day Percentage Change 3EMA
+            <input type="radio" name="functionSelect" value="3ema-diff-percent" onChange="refunction('usa', this);">
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="column">
+          <label class="container">Data:</label>
+          <label class="container">Cases
+            <input type="radio" checked="checked" name="dataSelect" value="cases" onChange="redata('usa', this);">
+            <span class="checkmark"></span>
+          </label>
+          <label class="container">Deaths
+            <input type="radio" name="dataSelect" value="deaths" onChange="redata('usa', this);">
+            <span class="checkmark"></span>
+          </label>
+        </div>
+      </div>
+      <div class="row">
+        <div class="column">
+          <label class="container">Sort Order:</label>
+          <label class="container">Alphabetical
+            <input type="radio" checked="checked" name="sortSelect" value="alpha" onChange="resort('usa', this);">
+            <span class="checkmark"></span>
+          </label>
+          <label class="container">Most Data Value
+            <input type="radio" name="sortSelect" value="most" onChange="resort('usa', this);">
+            <span class="checkmark"></span>
+          </label>
+          <label class="container">Least Data Value
+            <input type="radio" name="sortSelect" value="least" onChange="resort('usa', this);">
+            <span class="checkmark"></span>
+          </label>
+        </div>
+      </div>
+    </form>
+  </div>
 
-</form>
-	<div id='usaDiv'></div>
-
-        <h1>County Data</h1>
+  <h1>County Data</h1>
+  <div id='countyDiv'></div>
 <form>
 <table>
 <tr>
@@ -87,10 +130,9 @@
 </table>
 
 </form>
-	<div id='countyDiv'></div>
 
-        <footer>
-                Page Source can be found <a href="https://github.com/galthaus/corona-view">here</a>.<br/>
-                Data from The New York Times, based on reports from state and local health agencies. <a href="https://github.com/nytimes/covid-19-data">Here</a>
-        </footer>
+  <footer>
+    Page Source can be found <a href="https://github.com/galthaus/corona-view">here</a>.<br/>
+    Data from The New York Times, based on reports from state and local health agencies. <a href="https://github.com/nytimes/covid-19-data">Here</a>
+  </footer>
 </body>

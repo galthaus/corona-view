@@ -1,4 +1,11 @@
 
+// GREG: Add total line and toggle for on/off
+// GREG: Add toggle instead of date to days from min value.
+// GREG: Update title with pieces.
+// GREG: Fix county
+// GREG: Add state selector
+
+
 var all_data = {
   usa: {
     include_total: true, // true, false
@@ -33,10 +40,20 @@ var all_data = {
 },
 };
 
+function remin(g, elem) {
+        var config = all_data[g];
+        config.min = elem.value;
+
+        var output = document.getElementById(g+"MinValue");
+        output.innerHTML = elem.value;
+
+        parse_data(g);
+}
+
 function rescale(g, elem) {
         var config = all_data[g];
         config.scale = elem.value;
-        config.layout.yaxis.type = (elem.selectedIndex ? "log" : "linear");
+        config.layout.yaxis.type = elem.value;
         Plotly.newPlot(config.div, config.lines, config.layout);
 }
 
