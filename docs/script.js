@@ -1,9 +1,67 @@
 
 // GREG: Add total line and toggle for on/off
 // GREG: Add toggle instead of date to days from min value.
-// GREG: Add state selector
 // GREG: Update title with pieces.
+// GREG: Add days from min views
 
+var stateAbbrevToCode = {
+	AL: "01",
+	AK: "02",
+        // Gap
+	AZ: "04",
+	AR: "05",
+	CA: "06",
+        // Gap
+	CO: "08",
+	CT: "09",
+	DE: "10",
+        DC: "11",
+	FL: "12",
+	GA: "13",
+        // Gap
+	HI: "15",
+	ID: "16",
+	IL: "17",
+	IN: "18",
+	IA: "19",
+	KS: "20",
+	KY: "21",
+	LA: "22",
+	ME: "23",
+	MD: "24",
+	MA: "25",
+	MI: "26",
+	MN: "27",
+	MS: "28",
+	MO: "29",
+	MT: "30",
+	NE: "31",
+	NV: "32",
+	NH: "33",
+	NJ: "34",
+	NM: "35",
+	NY: "36",
+	NC: "37",
+	ND: "38",
+	OH: "39",
+	OK: "40",
+	OR: "41",
+	PA: "42",
+        // Gap
+	RI: "44",
+	SC: "45",
+	SD: "46",
+	TN: "47",
+	TX: "48",
+	UT: "49",
+	VT: "50",
+	VA: "51",
+        // Gap
+	WA: "53",
+	WV: "54",
+	WI: "55",
+	WY: "56",
+}
 
 var selectedTab='usa';
 var all_data = {
@@ -19,6 +77,7 @@ var all_data = {
     sort_order: "alpha",
     raw_data: {},
     scale: "linear",
+    selected: {},
     min: 100,
 },
   county: {
@@ -34,6 +93,7 @@ var all_data = {
     sort_order: "alpha",
     raw_data: {},
     scale: "linear",
+    selected: {},
     min: 20,
 },
 };
@@ -51,6 +111,16 @@ function openData(evt, tab) {
   // Show the current tab, and add an "active" class to the button that opened the tab
   evt.currentTarget.className += " active";
 
+  var umap = document.getElementById('vmap_usa');
+  var cmap = document.getElementById('vmap_usa_county');
+
+  if (tab == 'usa') {
+          umap.style.display = "block";
+          cmap.style.display = "none";
+  } else {
+          umap.style.display = "none";
+          cmap.style.display = "block";
+  }
 
   var elem;
   var config = all_data[tab];
@@ -135,8 +205,10 @@ function parse_data(table) {
 
         var dateIdx = 0;
         var nameIdx = 1;
+        var codeIdx = 2;
         var countIdx = 3;
         if (table == "county") {
+                codeIdx += 1;
                 countIdx += 1;
         }
         if (config.show == "deaths") {
@@ -146,6 +218,13 @@ function parse_data(table) {
         for (i = 1; i < raw_data.length; i++) {
                 var sdata = raw_data[i]
                 if ((sdata[dateIdx] >= config.rangeX.start) && (sdata[dateIdx] <= config.rangeX.end)) {
+                        if (Object.keys(config.selected).length > 0) {
+                                var code = sdata[codeIdx];
+                                var there = config.selected[code];
+                                if (there !== true) {
+                                        continue
+                                }
+                        }
                         var nd = parseInt(sdata[countIdx]);
                         // Skip entries until min met.
                         if (nd < config.min) {
@@ -268,6 +347,7 @@ function parse_data(table) {
         Plotly.newPlot('usaDiv', config.lines, config.layout);
 }
 
+function initCorona() {
 $.ajax({
   type: "GET",
   url: "https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-states.csv",
@@ -289,3 +369,43 @@ $.ajax({
 });
 
 
+        jQuery('#vmap_usa').vectorMap({
+            map: 'usa_en',
+            color: '#ffffff',
+            enableZoom: true,
+            showTooltip: true,
+            selectedColor: '#838383',
+            multiSelectRegion: true,
+            hoverColor: null,
+            onRegionSelect: function(event, code, region){
+                    var t = stateAbbrevToCode[code.toUpperCase()];
+                    all_data.usa.selected[t] = true;
+                    parse_data('usa')
+            },
+            onRegionDeselect: function(event, code, region){
+                    var t = stateAbbrevToCode[code.toUpperCase()];
+                    delete all_data.usa.selected[t];
+                    parse_data('usa')
+            },
+        });
+        jQuery('#vmap_usa_county').vectorMap({
+            map: 'usa_counties_en',
+            color: '#ffffff',
+            enableZoom: true,
+            showTooltip: true,
+            selectedColor: '#838383',
+            multiSelectRegion: true,
+            hoverColor: null,
+            onRegionSelect: function(event, code, region){
+                    all_data.county.selected[code] = true;
+                    parse_data('county')
+            },
+            onRegionDeselect: function(event, code, region){
+                    delete all_data.county.selected[code];
+                    parse_data('county')
+            },
+        });
+
+    // Get the element with id="defaultOpen" and click on it
+    document.getElementById("defaultOpen").click();
+}
