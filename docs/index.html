@@ -32,8 +32,15 @@
           <label class="container">Min:</label>
           <div class="slidecontainer">
             <input type="range" min="1" max="500" value="200" class="slider" id="minRange" onInput="remin(this);">
+            <span id="usaMinValue"></span>
           </div>
-          <span id="usaMinValue"></span>
+          <label class="container">Days From:</label>
+          <div class="slidercontainer">
+              <label class="switch_toggle">
+                <input id="days_from" type="checkbox" onChange="redaysfrom(this);">
+                <span class="slider_toggle round"></span>
+              </label>
+          </div>
         </div>
         <div class="column">
           <label class="container">Scale:</label>

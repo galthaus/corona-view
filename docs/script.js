@@ -1,8 +1,6 @@
 
 // GREG: Add total line and toggle for on/off
-// GREG: Add toggle instead of date to days from min value.
 // GREG: Update title with pieces.
-// GREG: Add days from min views
 
 var stateAbbrevToCode = {
 	AL: "01",
@@ -68,6 +66,7 @@ var all_data = {
   usa: {
     include_total: true, // true, false
     math: "count",       // count, 3ema, ???
+    days_from: true,
     rangeX: { start: "2020-01-01", end: "3000-00-00" },
     rangeY: "all", // all, top 10 on end, selector
     states: [],
@@ -83,6 +82,7 @@ var all_data = {
   county: {
     include_total: true, // true, false
     math: "count",       // count, 3ema, ???
+    days_from: true,
     rangeX: { start: "2020-01-01", end: "3000-00-00" },
     rangeY: "all", // all, top 10 on end, selector
     states: [],
@@ -135,6 +135,8 @@ function openData(evt, tab) {
   elem.checked = true;
   elem = document.getElementById(config.sort_order);
   elem.checked = true;
+  elem = document.getElementById("days_from");
+  elem.checked = config.days_from;
 
   selectedTab = tab;
   parse_data(tab);
@@ -160,6 +162,12 @@ function rescale(elem) {
 function refunction(elem) {
         var config = all_data[selectedTab];
         config.math = elem.value;
+        parse_data(selectedTab);
+}
+
+function redaysfrom(elem) {
+        var config = all_data[selectedTab];
+        config.days_from = elem.checked;
         parse_data(selectedTab);
 }
 
@@ -230,14 +238,24 @@ function parse_data(table) {
                         if (nd < config.min) {
                                 continue
                         }
+                        var state_data = lines[sdata[codeIdx]] || { name: sdata[nameIdx], type: "scatter", mode: "lines", x: [], y: [], r_y: []};
 
-                        if (first === undefined) {
-                                first = sdata[dateIdx];
+                        if (state_data.first == undefined) {
+                                state_data.first = sdata[dateIdx];
                         }
-                        last = sdata[dateIdx];
-                        var state_data = lines[sdata[nameIdx]] || { name: sdata[nameIdx], type: "scatter", mode: "lines", x: [], y: [], r_y: []};
 
-                        state_data.x.push(sdata[dateIdx]);
+                        var tx = sdata[dateIdx];
+                        if (config.days_from == true) {
+                                var ds = Date.parse(state_data.first);
+                                var dn = Date.parse(sdata[dateIdx]);
+                                tx = (dn - ds)/1000/60/60/24;
+                        }
+
+                        state_data.x.push(tx);
+                        if (first === undefined) {
+                                first = tx;
+                        }
+                        last = tx;
 
                         state_data.r_y.push(nd);
                         switch (config.math) {
@@ -300,7 +318,7 @@ function parse_data(table) {
                                 break;
                         }
 
-                        lines[sdata[nameIdx]] = state_data;
+                        lines[sdata[codeIdx]] = state_data;
                 }
         }
         lines = Object.values(lines)
@@ -337,13 +355,17 @@ function parse_data(table) {
         {step: 'all'}
       ]},
     rangeslider: {range: [first, last]},
-    type: 'date'
   },
   yaxis: {
     autorange: true,
     type: config.scale
   }
 };
+
+  if (config.days_from == false) {
+          config.layout.xaxis.type = 'date';
+  }
+
         Plotly.newPlot('usaDiv', config.lines, config.layout);
 }
 
