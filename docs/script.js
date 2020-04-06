@@ -1,6 +1,10 @@
 
 // GREG: Add total line and toggle for on/off
 // GREG: Update title with pieces.
+// GREG: Add per/capita
+// GREG: Add doubling days function.
+//
+// GREG: Start projections
 
 var stateAbbrevToCode = {
 	AL: "01",
