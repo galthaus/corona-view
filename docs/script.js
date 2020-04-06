@@ -66,7 +66,7 @@ var all_data = {
   usa: {
     include_total: true, // true, false
     math: "count",       // count, 3ema, ???
-    days_from: true,
+    days_from: false,
     rangeX: { start: "2020-01-01", end: "3000-00-00" },
     rangeY: "all", // all, top 10 on end, selector
     states: [],
@@ -82,7 +82,7 @@ var all_data = {
   county: {
     include_total: true, // true, false
     math: "count",       // count, 3ema, ???
-    days_from: true,
+    days_from: false,
     rangeX: { start: "2020-01-01", end: "3000-00-00" },
     rangeY: "all", // all, top 10 on end, selector
     states: [],
