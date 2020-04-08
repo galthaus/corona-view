@@ -29,19 +29,19 @@
     <form>
       <div class="row">
         <div class="column">
-          <label class="container">Min:</label>
+          <label class="container">Minimum cases or deaths before consideration:</label>
           <div class="slidecontainer">
             <input type="range" min="1" max="500" value="200" class="slider" id="minRange" onInput="remin(this);">
             <span id="usaMinValue"></span>
           </div>
-          <label class="container">Days From:</label>
+          <label class="container">Days From (x-axis starts when minimum met):</label>
           <div class="slidercontainer">
               <label class="switch_toggle">
                 <input id="days_from" type="checkbox" onChange="redaysfrom(this);">
                 <span class="slider_toggle round"></span>
               </label>
           </div>
-          <label class="container">Include Total:</label>
+          <label class="container">Include Total (all data not filtered):</label>
           <div class="slidercontainer">
               <label class="switch_toggle">
                 <input id="include_total" type="checkbox" onChange="retotal(this);">

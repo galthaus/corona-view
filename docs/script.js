@@ -1,5 +1,4 @@
 
-// GREG: Update title with pieces.
 // GREG: Add per/capita
 //
 // GREG: Start projections
@@ -379,8 +378,15 @@ function parse_data(table) {
         lines = sort_lines(lines, config.sort_order)
         config.lines = lines;
 
+        var titleStr = (table === "usa" ? "United States Per State Data" : "United States Per County Data")
+        if (config.include_total) {
+                titleStr += " with Total"
+        }
+        titleStr += " for COVID-19 "
+        titleStr += (config.show === "deaths" ? "deaths" : "cases")
+
         config.layout = {
-  title: 'United States Per State Data for COVID-19 ' + config.show,
+  title: titleStr,
   barmode: 'group',
   xaxis: {
     autorange: true,
@@ -461,6 +467,29 @@ $.ajax({
   success: function(response)
   {
 	all_data.county.raw_data = $.csv.toArrays(response);
+        var totals = [];
+        var cdate = "";
+        var total;
+        for (i = 1; i < all_data.county.raw_data.length; i++) {
+                var sdata = all_data.county.raw_data[i]
+
+                if (cdate !== sdata[0]) {
+                        if (total !== undefined) {
+                                totals.push(total);
+                        }
+                        cdate = sdata[0];
+                        total = [sdata[0], "total", "00", "00", parseInt(sdata[4]), parseInt(sdata[5])];
+                } else {
+                        total[4] += parseInt(sdata[4]);
+                        total[5] += parseInt(sdata[5]);
+                }
+        }
+        if (total !== undefined) {
+            totals.push(total);
+        }
+        for (i = 0; i < totals.length; i++) {
+                all_data.county.raw_data.push(totals[i]);
+        }
         parse_data("usa");
   }
 });
