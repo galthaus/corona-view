@@ -7,6 +7,7 @@
 // GREG: Start projections
 
 var stateAbbrevToCode = {
+        TOTAL: "00",
 	AL: "01",
 	AK: "02",
         // Gap
@@ -68,7 +69,7 @@ var stateAbbrevToCode = {
 var selectedTab='usa';
 var all_data = {
   usa: {
-    include_total: true, // true, false
+    include_total: false, // true, false
     math: "count",       // count, 3ema, ???
     days_from: false,
     rangeX: { start: "2020-01-01", end: "3000-00-00" },
@@ -84,7 +85,7 @@ var all_data = {
     min: 100,
 },
   county: {
-    include_total: true, // true, false
+    include_total: false, // true, false
     math: "count",       // count, 3ema, ???
     days_from: false,
     rangeX: { start: "2020-01-01", end: "3000-00-00" },
@@ -141,6 +142,8 @@ function openData(evt, tab) {
   elem.checked = true;
   elem = document.getElementById("days_from");
   elem.checked = config.days_from;
+  elem = document.getElementById("include_total");
+  elem.checked = config.include_total;
 
   selectedTab = tab;
   parse_data(tab);
@@ -162,6 +165,13 @@ function rescale(elem) {
         config.layout.yaxis.type = elem.value;
         Plotly.newPlot('usaDiv', config.lines, config.layout);
 }
+
+function retotal(elem) {
+        var config = all_data[selectedTab];
+        config.include_total = elem.checked;
+        parse_data(selectedTab);
+}
+
 
 function refunction(elem) {
         var config = all_data[selectedTab];
@@ -230,12 +240,16 @@ function parse_data(table) {
         for (i = 1; i < raw_data.length; i++) {
                 var sdata = raw_data[i]
                 if ((sdata[dateIdx] >= config.rangeX.start) && (sdata[dateIdx] <= config.rangeX.end)) {
-                        if (Object.keys(config.selected).length > 0) {
+                        if (config.include_total === false && (sdata[codeIdx] == "00")) {
+                          continue
+                        } else if (sdata[codeIdx] !== "00") {
+                          if (Object.keys(config.selected).length > 0) {
                                 var code = sdata[codeIdx];
                                 var there = config.selected[code];
                                 if (there !== true) {
                                         continue
                                 }
+                          }
                         }
                         var nd = parseInt(sdata[countIdx]);
                         // Skip entries until min met.
@@ -253,6 +267,8 @@ function parse_data(table) {
                                 var ds = Date.parse(state_data.first);
                                 var dn = Date.parse(sdata[dateIdx]);
                                 tx = (dn - ds)/1000/60/60/24;
+                        } else if (config.math == "diff-by-count") {
+                                tx = nd
                         }
 
                         state_data.x.push(tx);
@@ -263,6 +279,17 @@ function parse_data(table) {
 
                         state_data.r_y.push(nd);
                         switch (config.math) {
+                        case "diff-by-count":
+                                var prev = 0;
+                                var rprev = 0;
+                                if (state_data.r_y.length > 1) {
+                                        rprev = state_data.r_y[state_data.y.length-1];
+                                        prev = state_data.y[state_data.y.length-1];
+                                }
+                                nd = nd - rprev;
+                                var ema = (nd / 3) + (prev * 2 / 3);
+                                state_data.y.push(ema);
+                                break;
                         case "count":
                                 state_data.y.push(nd);
                                 break;
@@ -322,6 +349,7 @@ function parse_data(table) {
                                 break;
                         }
 
+
                         lines[sdata[codeIdx]] = state_data;
                 }
         }
@@ -369,8 +397,12 @@ function parse_data(table) {
   if (config.days_from == false) {
           config.layout.xaxis.type = 'date';
   }
+  if (config.math == "diff-by-count") {
+          config.layout.xaxis.type = 'log';
+          config.layout.yaxis.type = 'log';
+  }
 
-        Plotly.newPlot('usaDiv', config.lines, config.layout);
+  Plotly.newPlot('usaDiv', config.lines, config.layout);
 }
 
 function initCorona() {
@@ -381,6 +413,32 @@ $.ajax({
   success: function(response)
   {
 	all_data.usa.raw_data = $.csv.toArrays(response);
+
+        var totals = [];
+        var cdate = "";
+        var total;
+        for (i = 1; i < all_data.usa.raw_data.length; i++) {
+                var sdata = all_data.usa.raw_data[i]
+
+                if (cdate !== sdata[0]) {
+                        if (total !== undefined) {
+                                totals.push(total);
+                        }
+                        cdate = sdata[0];
+                        total = [sdata[0], "total", "00", parseInt(sdata[3]), parseInt(sdata[4])];
+                } else {
+                        total[3] += parseInt(sdata[3]);
+                        total[4] += parseInt(sdata[4]);
+                }
+        }
+        if (total !== undefined) {
+            totals.push(total);
+        }
+        for (i = 0; i < totals.length; i++) {
+                all_data.usa.raw_data.push(totals[i]);
+        }
+
+
 $.ajax({
   type: "GET",
   url: "https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv",

@@ -41,6 +41,13 @@
                 <span class="slider_toggle round"></span>
               </label>
           </div>
+          <label class="container">Include Total:</label>
+          <div class="slidercontainer">
+              <label class="switch_toggle">
+                <input id="include_total" type="checkbox" onChange="retotal(this);">
+                <span class="slider_toggle round"></span>
+              </label>
+          </div>
         </div>
         <div class="column">
           <label class="container">Scale:</label>
@@ -77,6 +84,10 @@
           </label>
           <label class="container">New By Day Percentage Change 3EMA
             <input id="3ema-diff-percent" type="radio" name="functionSelect" value="3ema-diff-percent" onChange="refunction(this);">
+            <span class="checkmark"></span>
+          </label>
+          <label class="container">Diff By Count
+            <input id="diff-by-count" type="radio" name="functionSelect" value="diff-by-count" onChange="refunction(this);">
             <span class="checkmark"></span>
           </label>
         </div>
