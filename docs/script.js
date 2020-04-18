@@ -1,4 +1,3 @@
-// GREG: "Add per/capita
 // GREG: "Start projections
 
 var stateCodeToAbbrev = {
