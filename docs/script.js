@@ -425,10 +425,21 @@ function parse_data(table) {
  if (config.show == "deaths") {
   countIdx += 1;
  }
+ if (table == "world") {
+   codeIdx = 1;
+   nameIdx = 2;
+   countIdx = 7;
+   if (config.show == "deaths") {
+    countIdx = 5;
+   }
+ }
 
  for (i = 1; i < raw_data.length; i++) {
   var sdata = raw_data[i]
   var code = sdata[codeIdx];
+  if (table === "world") {
+   code = code.toLowerCase();
+  }
   if ((sdata[dateIdx] >= config.rangeX.start) && (sdata[dateIdx] <= config.rangeX.end)) {
    if (config.include_total === false && (sdata[codeIdx] == "00")) {
     continue
@@ -732,7 +743,19 @@ function initCorona() {
        for (i = 0; i < totals.length; i++) {
         all_data.county.raw_data.push(totals[i]);
        }
-       parse_data(selectedTab);
+
+       $.ajax({
+        type: "GET",
+        url: "https://raw.githubusercontent.com/galthaus/corona-view/master/docs/dists/WHO-COVID-19-global-data.csv",
+        dataType: "text",
+        success: function(response) {
+         all_data.world.raw_data = $.csv.toArrays(response);
+
+         // GREG: Deal with total
+
+         parse_data(selectedTab);
+        }
+       });
       }
      });
     }
@@ -742,13 +765,16 @@ function initCorona() {
 
  var usSelect = [];
  var ctSelect = [];
+ var woSelect = [];
  if (selectedTab === "usa") {
   var arr = Object.keys(all_data.usa.selected);
   arr.forEach(e => {
    usSelect.push(stateCodeToAbbrev[e])
   });
- } else {
+ } else if (selectedTab === "county") {
   ctSelect = Object.keys(all_data.county.selected);
+ } else {
+  woSelect = Object.keys(all_data.world.selected);
  }
 
  jQuery('#vmap_world').vectorMap({
@@ -759,7 +785,7 @@ function initCorona() {
   selectedColor: '#838383',
   multiSelectRegion: true,
   hoverColor: null,
-  selectedRegions: usSelect,
+  selectedRegions: woSelect,
   onRegionSelect: function(event, code, region) {
    all_data.world.selected[code] = true;
    parse_data('world')
