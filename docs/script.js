@@ -1,8 +1,67 @@
 
-// GREG: Add per/capita
+// GREG: "Add per/capita
 //
-// GREG: Start projections
+// GREG: "Start projections
 
+var stateCodeToAbbrev = {
+        "00": "TOTAL",
+	"01": "AL",
+	"02": "AK",
+        // Gap
+	"04": "AZ",
+	"05": "AR",
+	"06": "CA",
+        // Gap
+	"08": "CO",
+	"09": "CT",
+	"10": "DE",
+        "11": "DC",
+	"12": "FL",
+	"13": "GA",
+        // Gap
+	"15": "HI",
+	"16": "ID",
+	"17": "IL",
+	"18": "IN",
+	"19": "IA",
+	"20": "KS",
+	"21": "KY",
+	"22": "LA",
+	"23": "ME",
+	"24": "MD",
+	"25": "MA",
+	"26": "MI",
+	"27": "MN",
+	"28": "MS",
+	"29": "MO",
+	"30": "MT",
+	"31": "NE",
+	"32": "NV",
+	"33": "NH",
+	"34": "NJ",
+	"35": "NM",
+	"36": "NY",
+	"37": "NC",
+	"38": "ND",
+	"39": "OH",
+	"40": "OK",
+	"41": "OR",
+	"42": "PA",
+        // Gap
+	"44": "RI",
+	"45": "SC",
+	"46": "SD",
+	"47": "TN",
+	"48": "TX",
+	"49": "UT",
+	"51": "VT",
+	"52": "VA",
+        // Gap
+	"53": "WA",
+	"54": "WV",
+	"55": "WI",
+	"56": "WY",
+}
 var stateAbbrevToCode = {
         TOTAL: "00",
 	AL: "01",
@@ -71,7 +130,6 @@ var all_data = {
     days_from: false,
     rangeX: { start: "2020-01-01", end: "3000-00-00" },
     rangeY: "all", // all, top 10 on end, selector
-    states: [],
     show: "cases",
     lines: [],
     layout: {},
@@ -87,8 +145,6 @@ var all_data = {
     days_from: false,
     rangeX: { start: "2020-01-01", end: "3000-00-00" },
     rangeY: "all", // all, top 10 on end, selector
-    states: [],
-    counties: [],
     show: "cases",
     lines: [],
     layout: {},
@@ -160,6 +216,7 @@ function rescale(elem) {
         var config = all_data[selectedTab];
         config.scale = elem.value;
         config.layout.yaxis.type = elem.value;
+        history.pushState({}, "", build_url(config));
         Plotly.newPlot('usaDiv', config.lines, config.layout);
 }
 
@@ -212,6 +269,80 @@ function sort_lines(lines, method) {
         });
 
         return lines;
+}
+
+function build_url(config) {
+        var a = [];
+        a.push("tab="+selectedTab);
+        if (config.include_total) {
+          a.push("total=true");
+        }
+        a.push("math="+config.math);
+        if (config.days_from) {
+          a.push("days_from=true");
+        }
+        a.push("show="+config.show);
+        a.push("sort_order="+config.sort_order);
+        a.push("scale="+config.scale);
+        a.push("min="+config.min);
+        if (Object.keys(config.selected).length > 0) {
+                var k = Object.keys(config.selected);
+                var oa = [];
+
+                k.forEach(e => {if (e !== "0") oa.push(e)});
+
+                if (oa.length > 0) {
+                  var v="selected="+oa.join(",");
+                  a.push(v);
+                }
+        }
+        return "?"+a.join("&");
+}
+
+function parseQuery(queryString) {
+    var query = {};
+    var n = queryString.indexOf("?");
+    queryString = queryString.substring(n);
+    var pairs = queryString.replace(/^\?/, '').split('&')
+    for (var i = 0; i < pairs.length; i++) {
+        var pair = pairs[i].split('=');
+        query[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '');
+    }
+    return query;
+}
+
+function parse_url(url) {
+        var data = parseQuery(url);
+
+        if (data['tab'] !== undefined) {
+                selectedTab = data['tab']
+        }
+        var config = all_data[selectedTab]
+        if (data['total'] !== undefined) {
+                config.include_total=true;
+        }
+        if (data['math'] !== undefined) {
+                config.math = data['math'];
+        }
+        if (data['days_from'] !== undefined) {
+                config.days_from = true;
+        }
+        if (data['show'] !== undefined) {
+                config.show = data['show'];
+        }
+        if (data['sort_order'] !== undefined) {
+                config.sort_order = data['sort_order'];
+        }
+        if (data['scale'] !== undefined) {
+                config.scale = data['scale'];
+        }
+        if (data['min'] !== undefined) {
+                config.min = parseInt(data['min']);
+        }
+        if (data['selected'] !== undefined) {
+                var arr = data['selected'].split(',');
+                arr.forEach(e => { config.selected[e] = true });
+        }
 }
 
 
@@ -423,10 +554,14 @@ function parse_data(table) {
           config.layout.yaxis.type = 'log';
   }
 
+  history.pushState({}, "", build_url(config));
   Plotly.newPlot('usaDiv', config.lines, config.layout);
 }
 
 function initCorona() {
+
+  parse_url(window.location.href);
+
 $.ajax({
   type: "GET",
   url: "https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-states.csv",
@@ -490,11 +625,23 @@ $.ajax({
         for (i = 0; i < totals.length; i++) {
                 all_data.county.raw_data.push(totals[i]);
         }
-        parse_data("usa");
+        parse_data(selectedTab);
   }
 });
   }
 });
+
+        var usSelect = [];
+        var ctSelect = [];
+        if (selectedTab === "usa") {
+                var arr = Object.keys(all_data.usa.selected);
+                arr.forEach(e => { usSelect.push(stateCodeToAbbrev[e]) });
+        } else {
+                ctSelect = Object.keys(all_data.county.selected);
+        }
+
+        console.log(usSelect);
+        console.log(ctSelect);
 
 
         jQuery('#vmap_usa').vectorMap({
@@ -505,6 +652,7 @@ $.ajax({
             selectedColor: '#838383',
             multiSelectRegion: true,
             hoverColor: null,
+            selectedRegions: usSelect,
             onRegionSelect: function(event, code, region){
                     var t = stateAbbrevToCode[code.toUpperCase()];
                     all_data.usa.selected[t] = true;
@@ -524,6 +672,7 @@ $.ajax({
             selectedColor: '#838383',
             multiSelectRegion: true,
             hoverColor: null,
+            selectedRegions: ctSelect,
             onRegionSelect: function(event, code, region){
                     all_data.county.selected[code] = true;
                     parse_data('county')
@@ -535,5 +684,5 @@ $.ajax({
         });
 
     // Get the element with id="defaultOpen" and click on it
-    document.getElementById("defaultOpen").click();
+    document.getElementById(selectedTab+"_tab").click();
 }
