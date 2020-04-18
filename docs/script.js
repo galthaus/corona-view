@@ -120,11 +120,16 @@ var stateAbbrevToCode = {
  WY: "56",
 }
 
-var popdata = [];
+var popdata = {};
 var selectedTab = 'usa';
 var all_data = {
  usa: {
   include_total: false, // true, false
+  per_capita: false, // true, false
+  per_capita_count: {
+   cases: 100000,
+   deaths: 100000,
+  },
   math: "count", // count, 3ema, ???
   days_from: false,
   rangeX: {
@@ -143,6 +148,11 @@ var all_data = {
  },
  county: {
   include_total: false, // true, false
+  per_capita: false, // true, false
+  per_capita_count: {
+   cases: 100000,
+   deaths: 100000,
+  },
   math: "count", // count, 3ema, ???
   days_from: false,
   rangeX: {
@@ -202,6 +212,8 @@ function openData(evt, tab) {
  elem.checked = config.days_from;
  elem = document.getElementById("include_total");
  elem.checked = config.include_total;
+ elem = document.getElementById("per_capita");
+ elem.checked = config.per_capita;
 
  selectedTab = tab;
  parse_data(tab);
@@ -231,6 +243,11 @@ function retotal(elem) {
  parse_data(selectedTab);
 }
 
+function repercapita(elem) {
+ var config = all_data[selectedTab];
+ config.per_capita = elem.checked;
+ parse_data(selectedTab);
+}
 
 function refunction(elem) {
  var config = all_data[selectedTab];
@@ -282,6 +299,9 @@ function build_url(config) {
  if (config.include_total) {
   a.push("total=true");
  }
+ if (config.per_capita) {
+  a.push("per_capita=true");
+ }
  a.push("math=" + config.math);
  if (config.days_from) {
   a.push("days_from=true");
@@ -327,6 +347,9 @@ function parse_url(url) {
  var config = all_data[selectedTab]
  if (data['total'] !== undefined) {
   config.include_total = true;
+ }
+ if (data['per_capita'] !== undefined) {
+  config.per_capita = true;
  }
  if (data['math'] !== undefined) {
   config.math = data['math'];
@@ -376,12 +399,12 @@ function parse_data(table) {
 
  for (i = 1; i < raw_data.length; i++) {
   var sdata = raw_data[i]
+  var code = sdata[codeIdx];
   if ((sdata[dateIdx] >= config.rangeX.start) && (sdata[dateIdx] <= config.rangeX.end)) {
    if (config.include_total === false && (sdata[codeIdx] == "00")) {
     continue
    } else if (sdata[codeIdx] !== "00") {
     if (Object.keys(config.selected).length > 0) {
-     var code = sdata[codeIdx];
      var there = config.selected[code];
      if (there !== true) {
       continue
@@ -389,6 +412,14 @@ function parse_data(table) {
     }
    }
    var nd = parseInt(sdata[countIdx]);
+
+   if (config.per_capita) {
+     if (code.length == 2) {
+       code = code + "000";
+     }
+     nd = nd * config.per_capita_count[config.show] / popdata[code];
+   }
+
    // Skip entries until min met.
    if (nd < config.min) {
     continue
@@ -531,6 +562,9 @@ function parse_data(table) {
  }
  titleStr += " for COVID-19 "
  titleStr += (config.show === "deaths" ? "deaths" : "cases")
+ if (config.per_capita) {
+  titleStr += " per " + config.per_capita_count[config.show];
+ }
 
  config.layout = {
   title: titleStr,
@@ -582,16 +616,31 @@ function parse_data(table) {
 function initCorona() {
 
  parse_url(window.location.href);
- console.log(window.location.href);
 
  $.ajax({
   type: "GET",
-  url: "/Users/galthaus/corona-view/docs/dists/co-est2019-alldata.csv",
+  url: "https://raw.githubusercontent.com/galthaus/corona-view/master/docs/dists/co-est2019-alldata.csv",
   dataType: "text",
   success: function(response) {
-   popdata = $.csv.toArrays(response);
+   var rawpopdata = $.csv.toArrays(response);
 
-   console.log(popdata);
+   var totalPop = 0;
+   rawpopdata.forEach(e => {
+    if (e[0] === "SUMLEV") {
+     return;
+    }
+
+    var idx = e[3]+e[4];
+    var pop = parseInt(e[18]);
+
+    if (e[4] === "000") {
+      if (stateCodeToAbbrev[e[3]] !== undefined) {
+       totalPop += pop;
+      }
+    }
+    popdata[idx] = pop;
+   });
+   popdata["00000"] = totalPop;
 
    $.ajax({
     type: "GET",

@@ -31,7 +31,7 @@
         <div class="column">
           <label class="container">Minimum cases or deaths before consideration:</label>
           <div class="slidecontainer">
-            <input type="range" min="1" max="500" value="200" class="slider" id="minRange" onInput="remin(this);">
+            <input type="range" min="0" max="500" value="200" class="slider" id="minRange" onInput="remin(this);">
             <span id="usaMinValue"></span>
           </div>
           <label class="container">Days From (x-axis starts when minimum met):</label>
@@ -45,6 +45,13 @@
           <div class="slidercontainer">
               <label class="switch_toggle">
                 <input id="include_total" type="checkbox" onChange="retotal(this);">
+                <span class="slider_toggle round"></span>
+              </label>
+          </div>
+          <label class="container">Per Capita:</label>
+          <div class="slidercontainer">
+              <label class="switch_toggle">
+                <input id="per_capita" type="checkbox" onChange="repercapita(this);">
                 <span class="slider_toggle round"></span>
               </label>
           </div>
@@ -129,6 +136,7 @@
 
   <footer>
     Page Source can be found <a href="https://github.com/galthaus/corona-view">here</a>.<br/>
-    Data from The New York Times, based on reports from state and local health agencies. <a href="https://github.com/nytimes/covid-19-data">Here</a>
+    Data from The New York Times, based on reports from state and local health agencies. <a href="https://github.com/nytimes/covid-19-data">Here</a><br/>
+    Census information from census.gov. <a href="https://www2.census.gov/programs-surveys/popest/datasets/2010-2019/counties/totals/">Here</a>
   </footer>
 </body>
