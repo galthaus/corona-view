@@ -120,6 +120,7 @@ var stateAbbrevToCode = {
  WY: "56",
 }
 
+var popdata = [];
 var selectedTab = 'usa';
 var all_data = {
  usa: {
@@ -581,69 +582,81 @@ function parse_data(table) {
 function initCorona() {
 
  parse_url(window.location.href);
+ console.log(window.location.href);
 
  $.ajax({
   type: "GET",
-  url: "https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-states.csv",
+  url: "/Users/galthaus/corona-view/docs/dists/co-est2019-alldata.csv",
   dataType: "text",
   success: function(response) {
-   all_data.usa.raw_data = $.csv.toArrays(response);
+   popdata = $.csv.toArrays(response);
 
-   var totals = [];
-   var cdate = "";
-   var total;
-   for (i = 1; i < all_data.usa.raw_data.length; i++) {
-    var sdata = all_data.usa.raw_data[i]
-
-    if (cdate !== sdata[0]) {
-     if (total !== undefined) {
-      totals.push(total);
-     }
-     cdate = sdata[0];
-     total = [sdata[0], "total", "00", parseInt(sdata[3]), parseInt(sdata[4])];
-    } else {
-     total[3] += parseInt(sdata[3]);
-     total[4] += parseInt(sdata[4]);
-    }
-   }
-   if (total !== undefined) {
-    totals.push(total);
-   }
-   for (i = 0; i < totals.length; i++) {
-    all_data.usa.raw_data.push(totals[i]);
-   }
-
+   console.log(popdata);
 
    $.ajax({
     type: "GET",
-    url: "https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv",
+    url: "https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-states.csv",
     dataType: "text",
     success: function(response) {
-     all_data.county.raw_data = $.csv.toArrays(response);
+     all_data.usa.raw_data = $.csv.toArrays(response);
+
      var totals = [];
      var cdate = "";
      var total;
-     for (i = 1; i < all_data.county.raw_data.length; i++) {
-      var sdata = all_data.county.raw_data[i]
+     for (i = 1; i < all_data.usa.raw_data.length; i++) {
+      var sdata = all_data.usa.raw_data[i]
 
       if (cdate !== sdata[0]) {
        if (total !== undefined) {
         totals.push(total);
        }
        cdate = sdata[0];
-       total = [sdata[0], "total", "00", "00", parseInt(sdata[4]), parseInt(sdata[5])];
+       total = [sdata[0], "total", "00", parseInt(sdata[3]), parseInt(sdata[4])];
       } else {
+       total[3] += parseInt(sdata[3]);
        total[4] += parseInt(sdata[4]);
-       total[5] += parseInt(sdata[5]);
       }
      }
      if (total !== undefined) {
       totals.push(total);
      }
      for (i = 0; i < totals.length; i++) {
-      all_data.county.raw_data.push(totals[i]);
+      all_data.usa.raw_data.push(totals[i]);
      }
-     parse_data(selectedTab);
+
+
+     $.ajax({
+      type: "GET",
+      url: "https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv",
+      dataType: "text",
+      success: function(response) {
+       all_data.county.raw_data = $.csv.toArrays(response);
+       var totals = [];
+       var cdate = "";
+       var total;
+       for (i = 1; i < all_data.county.raw_data.length; i++) {
+        var sdata = all_data.county.raw_data[i]
+
+        if (cdate !== sdata[0]) {
+         if (total !== undefined) {
+          totals.push(total);
+         }
+         cdate = sdata[0];
+         total = [sdata[0], "total", "00", "00", parseInt(sdata[4]), parseInt(sdata[5])];
+        } else {
+         total[4] += parseInt(sdata[4]);
+         total[5] += parseInt(sdata[5]);
+        }
+       }
+       if (total !== undefined) {
+        totals.push(total);
+       }
+       for (i = 0; i < totals.length; i++) {
+        all_data.county.raw_data.push(totals[i]);
+       }
+       parse_data(selectedTab);
+      }
+     });
     }
    });
   }
@@ -659,10 +672,6 @@ function initCorona() {
  } else {
   ctSelect = Object.keys(all_data.county.selected);
  }
-
- console.log(usSelect);
- console.log(ctSelect);
-
 
  jQuery('#vmap_usa').vectorMap({
   map: 'usa_en',
