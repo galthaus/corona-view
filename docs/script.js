@@ -122,6 +122,29 @@ var stateAbbrevToCode = {
 var popdata = {};
 var selectedTab = 'usa';
 var all_data = {
+ world: {
+  include_total: false, // true, false
+  per_capita: false, // true, false
+  per_capita_count: {
+   cases: 100000,
+   deaths: 100000,
+  },
+  math: "count", // count, 3ema, ???
+  days_from: false,
+  rangeX: {
+   start: "2020-01-01",
+   end: "3000-00-00"
+  },
+  rangeY: "all", // all, top 10 on end, selector
+  show: "cases",
+  lines: [],
+  layout: {},
+  sort_order: "alpha",
+  raw_data: {},
+  scale: "linear",
+  selected: {},
+  min: 100,
+ },
  usa: {
   include_total: false, // true, false
   per_capita: false, // true, false
@@ -183,13 +206,20 @@ function openData(evt, tab) {
  // Show the current tab, and add an "active" class to the button that opened the tab
  evt.currentTarget.className += " active";
 
+ var wmap = document.getElementById('vmap_world');
  var umap = document.getElementById('vmap_usa');
  var cmap = document.getElementById('vmap_usa_county');
 
  if (tab == 'usa') {
+  wmap.style.display = "none";
   umap.style.display = "block";
   cmap.style.display = "none";
+ } else if (tab == 'world') {
+  wmap.style.display = "block";
+  umap.style.display = "none";
+  cmap.style.display = "none";
  } else {
+  wmap.style.display = "none";
   umap.style.display = "none";
   cmap.style.display = "block";
  }
@@ -721,6 +751,24 @@ function initCorona() {
   ctSelect = Object.keys(all_data.county.selected);
  }
 
+ jQuery('#vmap_world').vectorMap({
+  map: 'world_en',
+  color: '#ffffff',
+  enableZoom: true,
+  showTooltip: true,
+  selectedColor: '#838383',
+  multiSelectRegion: true,
+  hoverColor: null,
+  selectedRegions: usSelect,
+  onRegionSelect: function(event, code, region) {
+   all_data.world.selected[code] = true;
+   parse_data('world')
+  },
+  onRegionDeselect: function(event, code, region) {
+   delete all_data.world.selected[code];
+   parse_data('world')
+  },
+ });
  jQuery('#vmap_usa').vectorMap({
   map: 'usa_en',
   color: '#ffffff',
